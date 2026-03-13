@@ -102,7 +102,7 @@ defmodule Mix.Tasks.DevTodo.Init do
           #{app |> Atom.to_string() |> Macro.camelize()}Web.Endpoint
         ]
 
-    2. Add to your router in lib/#{Atom.to_string(app) |> String.replace("_", "_")}_web/router.ex:
+    2. Add to your router in lib/#{app}_web/router.ex:
 
         import DevTodo.Router
 

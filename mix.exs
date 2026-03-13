@@ -28,19 +28,20 @@ defmodule DevTodo.MixProject do
 
   defp deps do
     [
+      {:file_system, "~> 1.0"},
+      {:nimble_parsec, "~> 1.4"},
+      {:phoenix_live_view, "~> 1.0"},
+      {:phoenix_pubsub, "~> 2.1"},
       {:esbuild, "~> 0.5", only: :dev},
       {:ex_doc, "~> 0.34", only: :dev, runtime: false},
-      {:file_system, "~> 1.0"},
       {:heroicons,
        github: "tailwindlabs/heroicons",
        tag: "v2.2.0",
        sparse: "optimized",
        app: false,
        compile: false,
-       depth: 1},
-      {:nimble_parsec, "~> 1.4"},
-      {:phoenix_live_view, "~> 1.0"},
-      {:phoenix_pubsub, "~> 2.1"},
+       depth: 1,
+       only: :dev},
       {:tailwind, "~> 0.3", only: :dev},
       {:tailwind_formatter, "~> 0.4", only: :dev, runtime: false}
     ]
@@ -54,10 +55,7 @@ defmodule DevTodo.MixProject do
         "GitHub" => @source_url,
         "Changelog" => "#{@source_url}/blob/main/CHANGELOG.md"
       },
-      files: ~w(
-        lib dist priv
-        mix.exs README.md LICENSE CHANGELOG.md
-      )
+      files: ~w(lib dist mix.exs README.md LICENSE CHANGELOG.md)
     ]
   end
 
