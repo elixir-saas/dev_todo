@@ -1,7 +1,7 @@
 defmodule DevTodo.MixProject do
   use Mix.Project
 
-  @version "0.0.0"
+  @version "0.1.0"
   @source_url "https://github.com/elixir-saas/dev_todo"
 
   def project do
