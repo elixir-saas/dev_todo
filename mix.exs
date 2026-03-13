@@ -1,28 +1,79 @@
 defmodule DevTodo.MixProject do
   use Mix.Project
 
+  @version "0.1.0"
+  @source_url "https://github.com/elixir-saas/dev_todo"
+
   def project do
     [
       app: :dev_todo,
-      version: "0.1.0",
+      version: @version,
       elixir: "~> 1.19",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      aliases: aliases(),
+      package: package(),
+      description:
+        "A file-backed Kanban board for Elixir projects. TODO.md is the source of truth.",
+      source_url: @source_url,
+      docs: docs()
     ]
   end
 
-  # Run "mix help compile.app" to learn about applications.
   def application do
     [
       extra_applications: [:logger]
     ]
   end
 
-  # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      # {:dep_from_hexpm, "~> 0.3.0"},
-      # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
+      {:esbuild, "~> 0.5", only: :dev},
+      {:ex_doc, "~> 0.34", only: :dev, runtime: false},
+      {:file_system, "~> 1.0"},
+      {:heroicons,
+       github: "tailwindlabs/heroicons",
+       tag: "v2.2.0",
+       sparse: "optimized",
+       app: false,
+       compile: false,
+       depth: 1},
+      {:nimble_parsec, "~> 1.4"},
+      {:phoenix_live_view, "~> 1.0"},
+      {:phoenix_pubsub, "~> 2.1"},
+      {:tailwind, "~> 0.3", only: :dev},
+      {:tailwind_formatter, "~> 0.4", only: :dev, runtime: false}
+    ]
+  end
+
+  defp package do
+    [
+      maintainers: ["Justin"],
+      licenses: ["MIT"],
+      links: %{
+        "GitHub" => @source_url,
+        "Changelog" => "#{@source_url}/blob/main/CHANGELOG.md"
+      },
+      files: ~w(
+        lib dist priv
+        mix.exs README.md LICENSE CHANGELOG.md
+      )
+    ]
+  end
+
+  defp docs do
+    [
+      main: "DevTodo",
+      source_ref: "v#{@version}",
+      extras: ["README.md", "CHANGELOG.md"]
+    ]
+  end
+
+  defp aliases do
+    [
+      setup: ["deps.get"],
+      "assets.build": ["esbuild default --minify", "tailwind default --minify"],
+      "assets.watch": ["assets.watch"]
     ]
   end
 end
