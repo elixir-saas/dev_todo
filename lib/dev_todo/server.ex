@@ -3,6 +3,8 @@ defmodule DevTodo.Server do
 
   use GenServer
 
+  require Logger
+
   alias DevTodo.{File, Parser, Task}
 
   @debounce_ms 500
@@ -201,12 +203,22 @@ defmodule DevTodo.Server do
 
   @impl true
   def handle_cast(:reload, %{just_wrote: true} = state) do
+    Logger.debug("[DevTodo] Reload skipped (self-triggered write)")
     {:noreply, state}
   end
 
   def handle_cast(:reload, state) do
-    case File.read_tasks() do
+    {elapsed, result} = :timer.tc(fn -> File.read_tasks() end)
+
+    case result do
       {:ok, {statuses, tasks, header, prefix, raw_lines, warnings}} ->
+        task_count = tasks |> Map.values() |> List.flatten() |> length()
+        warning_count = length(warnings)
+
+        Logger.debug(
+          "[DevTodo] Reloaded #{Path.basename(File.todo_path())} (#{task_count} tasks, #{warning_count} warnings, #{div(elapsed, 1000)}ms)"
+        )
+
         broadcast(prefix, statuses, tasks, warnings)
 
         {:noreply,
@@ -222,7 +234,8 @@ defmodule DevTodo.Server do
              mtime: file_mtime()
          }}
 
-      {:error, _} ->
+      {:error, reason} ->
+        Logger.debug("[DevTodo] Reload failed: #{inspect(reason)}")
         {:noreply, state}
     end
   end
@@ -235,7 +248,14 @@ defmodule DevTodo.Server do
   # Private helpers
 
   defp write_and_broadcast(state, tasks) do
-    File.write_tasks(state.statuses, tasks, state.header, state.raw_lines)
+    {elapsed, _} =
+      :timer.tc(fn -> File.write_tasks(state.statuses, tasks, state.header, state.raw_lines) end)
+
+    task_count = tasks |> Map.values() |> List.flatten() |> length()
+
+    Logger.debug(
+      "[DevTodo] Wrote #{Path.basename(File.todo_path())} (#{task_count} tasks in #{div(elapsed, 1000)}ms)"
+    )
 
     if state.debounce_ref, do: Process.cancel_timer(state.debounce_ref)
     ref = Process.send_after(self(), :clear_debounce, @debounce_ms)

@@ -3,6 +3,8 @@ defmodule DevTodo.Watcher do
 
   use GenServer
 
+  require Logger
+
   alias DevTodo.{File, Server}
 
   def start_link(opts \\ []) do
@@ -18,8 +20,9 @@ defmodule DevTodo.Watcher do
   end
 
   @impl true
-  def handle_info({:file_event, _pid, {path, _events}}, state) do
+  def handle_info({:file_event, _pid, {path, events}}, state) do
     if to_string(path) |> Path.expand() == state.watch_path do
+      Logger.debug("[DevTodo] File change detected (#{Enum.join(events, ", ")})")
       Server.reload()
     end
 
