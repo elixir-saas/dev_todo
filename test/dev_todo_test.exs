@@ -1,8 +1,6 @@
 defmodule DevTodoTest do
   use ExUnit.Case
-  doctest DevTodo
 
-  test "greets the world" do
-    assert DevTodo.hello() == :world
-  end
+  # Integration tests for the DevTodo public API are covered
+  # by DevTodo.ServerTest, which exercises the same delegates.
 end
