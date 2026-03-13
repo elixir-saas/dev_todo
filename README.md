@@ -4,6 +4,11 @@ A file-backed Kanban board for Elixir projects. Your `TODO.md` is the source of 
 
 No database. No migrations. Just a markdown file.
 
+<p>
+  <img src="priv/demo_board.png" width="49%" alt="Board view" />
+  <img src="priv/demo_list.png" width="49%" alt="List view" />
+</p>
+
 ## Features
 
 - Board and list views with drag-and-drop reordering
