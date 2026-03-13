@@ -182,7 +182,7 @@ cd dev_todo
 mix setup
 ```
 
-Phoenix JS deps (`phoenix.js`, `phoenix_live_view.js`) are loaded from their OTP application directories at compile time by `DevTodo.Web.Assets` — same approach as LiveDashboard. JS dependencies (Sortable.js, `@phx-hook/sortable`) are installed via npm and bundled by esbuild into `dist/`. The vendor directory (`assets/vendor/`) contains Tailwind plugins (daisyUI, heroicons).
+Phoenix JS deps (`phoenix.js`, `phoenix_live_view.js`) are loaded from their OTP application directories at compile time by the `Assets` module — same approach as LiveDashboard. JS dependencies (Sortable.js, `@phx-hook/sortable`) are installed via npm and bundled by esbuild into `dist/`. The vendor directory (`assets/vendor/`) contains Tailwind plugins (daisyUI, heroicons).
 
 If you're working on asset changes, also run:
 
@@ -200,7 +200,7 @@ mix assets.build
 
 This runs esbuild (JS) and tailwind (CSS) via their hex packages — binaries are downloaded automatically on first run. The JS bundle (~39kb) contains Sortable.js and the `@phx-hook/sortable` hook; Phoenix and LiveView JS are concatenated at compile time from their OTP app dirs.
 
-The built files in `dist/` are committed and embedded into the `DevTodo.Web.Assets` module at compile time. In production (default), assets are served from the compiled module with immutable cache headers.
+The built files in `dist/` are committed and embedded into the the `Assets` module module at compile time. In production (default), assets are served from the compiled module with immutable cache headers.
 
 ### Developing with a host Phoenix app
 
