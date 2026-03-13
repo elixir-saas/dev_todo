@@ -22,3 +22,7 @@ erl_crash.dump
 # Ignore package tarball (built via "mix hex.build").
 dev_todo-*.tar
 
+# npm artifacts (JS deps are bundled into dist/ by esbuild)
+/assets/node_modules/
+/assets/package-lock.json
+
