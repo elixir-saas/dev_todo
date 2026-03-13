@@ -145,7 +145,7 @@ defmodule DevTodo.Web.Components do
         data-group="todo_columns"
         data-group-id={@status}
         data-animation="150"
-        data-delay="300"
+        data-delay="350"
         data-delay-on-touch-only
         data-ghost-class="invisible"
         data-force-fallback
@@ -246,6 +246,8 @@ defmodule DevTodo.Web.Components do
                 data-group="todo_columns"
                 data-group-id={status}
                 data-animation="150"
+                data-delay="350"
+                data-delay-on-touch-only
                 data-ghost-class="invisible"
                 data-force-fallback
               >
