@@ -120,7 +120,7 @@ defmodule DevTodo.Web.Components do
   def column(assigns) do
     ~H"""
     <div class="group/section min-h-0 w-64 shrink-0 overflow-y-auto rounded-lg sm:w-72">
-      <div class="bg-base-100/40 h-15 sticky top-0 z-10 flex items-center px-3 backdrop-blur-sm sm:px-6">
+      <div class="bg-base-100/40 h-15 sticky top-0 z-10 flex items-center px-6 backdrop-blur-sm">
         <div class="mr-3 flex shrink-0 justify-center">
           <.task_status_icon status={@status} />
         </div>
@@ -145,7 +145,7 @@ defmodule DevTodo.Web.Components do
         data-group="todo_columns"
         data-group-id={@status}
         data-animation="150"
-        data-delay="300"
+        data-delay="350"
         data-delay-on-touch-only
         data-ghost-class="invisible"
         data-force-fallback
@@ -246,6 +246,8 @@ defmodule DevTodo.Web.Components do
                 data-group="todo_columns"
                 data-group-id={status}
                 data-animation="150"
+                data-delay="350"
+                data-delay-on-touch-only
                 data-ghost-class="invisible"
                 data-force-fallback
               >
