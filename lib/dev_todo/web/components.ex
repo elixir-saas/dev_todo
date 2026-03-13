@@ -95,7 +95,7 @@ defmodule DevTodo.Web.Components do
   def board(assigns) do
     ~H"""
     <div class="flex min-h-0 flex-1 p-2">
-      <div class="bg-base-100 border-base-300 flex w-full flex-1 rounded-xl border shadow-sm">
+      <div class="bg-base-100 border-base-300 flex w-full flex-1 overflow-hidden rounded-xl border shadow-sm">
         <div id="board" class="flex flex-1 overflow-x-auto">
           <.column
             :for={status <- @statuses}
@@ -217,7 +217,7 @@ defmodule DevTodo.Web.Components do
   def list_view(assigns) do
     ~H"""
     <div class="flex min-h-0 flex-1 p-2">
-      <div class="bg-base-100 border-base-300 flex w-full flex-1 rounded-xl border shadow-sm ">
+      <div class="bg-base-100 border-base-300 flex w-full flex-1 overflow-hidden rounded-xl border shadow-sm">
         <div class="flex-1 overflow-auto">
           <div class="space-y-3 py-3">
             <div :for={status <- @statuses} class="group/section">
