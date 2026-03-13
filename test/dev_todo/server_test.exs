@@ -162,4 +162,69 @@ defmodule DevTodo.ServerTest do
       assert Server.warnings() == []
     end
   end
+
+  describe "duplicate ID fixing" do
+    @duplicate_content """
+    <!--
+    TODO.md — Project Task Board
+
+    - Prefix: TST
+    -->
+
+    ## Todo
+
+    - [1] First task
+    - [1] Duplicate of first
+
+    ## Done
+
+    - [2] Done task
+    - [1] Another duplicate
+    """
+
+    test "reassigns duplicate IDs on startup" do
+      stop_supervised!(Server)
+
+      tmp_dir = System.tmp_dir!()
+      path = Path.join(tmp_dir, "dedup_test_#{System.unique_integer([:positive])}.md")
+      File.write!(path, @duplicate_content)
+      Application.put_env(:dev_todo, :todo_path, path)
+
+      start_supervised!(Server)
+
+      tasks = Server.list_tasks()
+      all_ids = tasks |> Map.values() |> List.flatten() |> Enum.map(& &1.id)
+
+      assert length(all_ids) == length(Enum.uniq(all_ids)),
+             "Expected unique IDs, got: #{inspect(all_ids)}"
+
+      File.rm(path)
+    end
+
+    test "preserves first occurrence of each ID" do
+      stop_supervised!(Server)
+
+      tmp_dir = System.tmp_dir!()
+      path = Path.join(tmp_dir, "dedup_test_#{System.unique_integer([:positive])}.md")
+      File.write!(path, @duplicate_content)
+      Application.put_env(:dev_todo, :todo_path, path)
+
+      start_supervised!(Server)
+
+      tasks = Server.list_tasks()
+      first_todo = hd(tasks[:todo])
+      assert first_todo.id == 1
+      assert first_todo.title == "First task"
+
+      File.rm(path)
+    end
+
+    test "does not alter tasks when no duplicates exist" do
+      tasks = Server.list_tasks()
+      assert Server.get_task(1).title == "First task"
+      assert Server.get_task(2).title == "Second task"
+      assert Server.get_task(3).title == "Completed task"
+      assert tasks |> Map.values() |> List.flatten() |> length() == 3
+    end
+  end
 end

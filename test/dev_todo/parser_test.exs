@@ -521,6 +521,41 @@ defmodule DevTodo.ParserTest do
     end
   end
 
+  describe "has_duplicate_ids?/1" do
+    test "returns false when all IDs are unique" do
+      tasks = %{
+        todo: [%Task{id: 1, title: "A", status: :todo, position: 0}],
+        done: [%Task{id: 2, title: "B", status: :done, position: 0}]
+      }
+
+      refute Parser.has_duplicate_ids?(tasks)
+    end
+
+    test "returns true when IDs are duplicated within a status" do
+      tasks = %{
+        todo: [
+          %Task{id: 1, title: "A", status: :todo, position: 0},
+          %Task{id: 1, title: "B", status: :todo, position: 1}
+        ]
+      }
+
+      assert Parser.has_duplicate_ids?(tasks)
+    end
+
+    test "returns true when IDs are duplicated across statuses" do
+      tasks = %{
+        todo: [%Task{id: 1, title: "A", status: :todo, position: 0}],
+        done: [%Task{id: 1, title: "B", status: :done, position: 0}]
+      }
+
+      assert Parser.has_duplicate_ids?(tasks)
+    end
+
+    test "returns false for empty tasks" do
+      refute Parser.has_duplicate_ids?(%{})
+    end
+  end
+
   describe "heading_to_status/1" do
     test "converts simple heading" do
       assert Parser.heading_to_status("Todo") == :todo

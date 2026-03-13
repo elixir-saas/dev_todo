@@ -3,7 +3,7 @@ defmodule DevTodo.Server do
 
   use GenServer
 
-  alias DevTodo.{File, Task}
+  alias DevTodo.{File, Parser, Task}
 
   @debounce_ms 500
 
@@ -68,6 +68,7 @@ defmodule DevTodo.Server do
   @impl true
   def init(_opts) do
     {:ok, {statuses, tasks, header, prefix, raw_lines, warnings}} = File.read_tasks()
+    tasks = maybe_fix_duplicate_ids(tasks, statuses)
 
     {:ok,
      %{
@@ -370,6 +371,30 @@ defmodule DevTodo.Server do
     case Elixir.File.stat(File.todo_path()) do
       {:ok, %{mtime: mtime}} -> mtime
       _ -> nil
+    end
+  end
+
+  # If any IDs are duplicated, reassign them sequentially and return fixed tasks.
+  defp maybe_fix_duplicate_ids(tasks, statuses) do
+    if Parser.has_duplicate_ids?(tasks) do
+      {fixed, _seen} =
+        Enum.reduce(statuses, {tasks, MapSet.new()}, fn status, {acc, seen} ->
+          {updated, seen} =
+            Enum.map_reduce(Map.get(acc, status, []), seen, fn task, seen ->
+              if MapSet.member?(seen, task.id) do
+                new_id = compute_next_id(acc)
+                {%{task | id: new_id}, MapSet.put(seen, new_id)}
+              else
+                {task, MapSet.put(seen, task.id)}
+              end
+            end)
+
+          {Map.put(acc, status, updated), seen}
+        end)
+
+      fixed
+    else
+      tasks
     end
   end
 end

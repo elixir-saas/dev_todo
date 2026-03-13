@@ -166,6 +166,14 @@ defmodule DevTodo.Parser do
     |> Enum.map_join(" ", &String.capitalize/1)
   end
 
+  @doc """
+  Returns true if any task ID appears more than once across all statuses.
+  """
+  def has_duplicate_ids?(tasks) do
+    ids = tasks |> Map.values() |> List.flatten() |> Enum.map(& &1.id)
+    length(ids) != length(Enum.uniq(ids))
+  end
+
   # --- Private helpers ---
 
   defp build_result(tokens) do
