@@ -121,6 +121,40 @@ Rules for AI agents editing this file:
 | `:todo_path`  | `"TODO.md"` | Path to the TODO.md file |
 | `:dev`        | `false`     | Serve assets from disk at runtime (for library development) |
 
+## Statuses
+
+Statuses are derived from `## Heading` sections in your TODO.md — add any heading you like and the board adapts automatically. The following statuses have custom icons and colors built in:
+
+| Heading | Icon | Color | Atom |
+|---|---|---|---|
+| **Default** | | | |
+| `## In Progress` | arrow-path | yellow | `:in_progress` |
+| `## Todo` | arrow-right | blue | `:todo` |
+| `## Backlog` | ellipsis | neutral | `:backlog` |
+| `## Done` | check | green | `:done` |
+| **Review & Feedback** | | | |
+| `## Review` | eye | purple | `:review` |
+| `## Feedback` | chat-bubble | violet | `:feedback` |
+| `## Approved` | thumb-up | emerald | `:approved` |
+| **Planning & Ideation** | | | |
+| `## Ideas` | light-bulb | amber | `:ideas` |
+| `## Planning` | map | sky | `:planning` |
+| `## Design` | paint-brush | pink | `:design` |
+| **Testing & QA** | | | |
+| `## Testing` | beaker | cyan | `:testing` |
+| `## QA` | clipboard-check | teal | `:qa` |
+| **Issue States** | | | |
+| `## Blocked` | no-symbol | red | `:blocked` |
+| `## Bug` | bug-ant | red | `:bug` |
+| `## Urgent` | fire | rose | `:urgent` |
+| **Workflow** | | | |
+| `## Ready` | rocket-launch | lime | `:ready` |
+| `## On Hold` | pause | orange | `:on_hold` |
+| `## Cancelled` | x-mark | muted | `:cancelled` |
+| `## Archived` | archive-box | muted | `:archived` |
+
+Any heading not listed above gets a neutral dash icon. Headings are converted to atoms by downcasing and replacing spaces with underscores (e.g., `## In Progress` becomes `:in_progress`).
+
 ## Router Options
 
 ```elixir

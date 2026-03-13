@@ -336,6 +336,7 @@ defmodule DevTodo.Web.Components do
   def task_status_icon(assigns) do
     status_assigns =
       case assigns.status do
+        # Default statuses
         :backlog ->
           [class: "text-neutral/60 border-base-300", icon: "hero-ellipsis-horizontal"]
 
@@ -348,6 +349,57 @@ defmodule DevTodo.Web.Components do
         :done ->
           [class: "text-success border-success/30", icon: "hero-check"]
 
+        # Review & feedback
+        :review ->
+          [class: "text-purple-500 border-purple-500/30", icon: "hero-eye"]
+
+        :feedback ->
+          [class: "text-violet-500 border-violet-500/30", icon: "hero-chat-bubble-left-ellipsis"]
+
+        :approved ->
+          [class: "text-emerald-500 border-emerald-500/30", icon: "hero-hand-thumb-up"]
+
+        # Planning & ideation
+        :ideas ->
+          [class: "text-amber-400 border-amber-400/30", icon: "hero-light-bulb"]
+
+        :planning ->
+          [class: "text-sky-500 border-sky-500/30", icon: "hero-map"]
+
+        :design ->
+          [class: "text-pink-500 border-pink-500/30", icon: "hero-paint-brush"]
+
+        # Testing & QA
+        :testing ->
+          [class: "text-cyan-500 border-cyan-500/30", icon: "hero-beaker"]
+
+        :qa ->
+          [class: "text-teal-500 border-teal-500/30", icon: "hero-clipboard-document-check"]
+
+        # Issue states
+        :blocked ->
+          [class: "text-error border-error/30", icon: "hero-no-symbol"]
+
+        :bug ->
+          [class: "text-red-500 border-red-500/30", icon: "hero-bug-ant"]
+
+        :urgent ->
+          [class: "text-rose-500 border-rose-500/30", icon: "hero-fire"]
+
+        # Workflow
+        :ready ->
+          [class: "text-lime-500 border-lime-500/30", icon: "hero-rocket-launch"]
+
+        :on_hold ->
+          [class: "text-orange-400 border-orange-400/30", icon: "hero-pause"]
+
+        :cancelled ->
+          [class: "text-base-content/30 border-base-300", icon: "hero-x-mark"]
+
+        :archived ->
+          [class: "text-base-content/30 border-base-300", icon: "hero-archive-box"]
+
+        # Catch-all
         _ ->
           [class: "text-base-content/40 border-base-300", icon: "hero-minus"]
       end
