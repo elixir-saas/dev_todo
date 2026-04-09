@@ -11,8 +11,8 @@ defmodule DevTodo.Web.IndexLive do
       <div class="bg-base-200 flex min-h-0 flex-1 flex-col">
         <div class="flex flex-col gap-2 px-4 pt-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <div class="mb-3">
-            <h1 class="text-lg font-semibold">DevTodo</h1>
-            <p class="text-base-content/40 hidden text-xs sm:block">
+            <h1 class="text-xl font-semibold">DevTodo</h1>
+            <p class="text-base-content/40 hidden text-sm sm:block">
               Changes sync both ways with TODO.md — edit here, in your editor, or let an AI agent manage your tasks.
             </p>
           </div>
@@ -75,17 +75,17 @@ defmodule DevTodo.Web.IndexLive do
           <div :if={@modal_task.id} class="flex items-start gap-3">
             <.task_status_icon status={@modal_task.status} />
             <div class="flex-1">
-              <h3 class="text-lg font-semibold">{@modal_task.title}</h3>
-              <span class="text-base-content/40 font-mono text-xs">
+              <h3 class="text-xl font-semibold">{@modal_task.title}</h3>
+              <span class="text-base-content/40 font-mono text-sm">
                 {@prefix}-{@modal_task.id}
               </span>
             </div>
           </div>
-          <h3 :if={!@modal_task.id} class="text-lg font-semibold">Add Task</h3>
+          <h3 :if={!@modal_task.id} class="text-xl font-semibold">Add Task</h3>
 
           <form phx-submit="save_task" phx-change="validate_task" class="space-y-4">
             <div class="flex flex-col gap-1">
-              <label class="text-sm font-medium">Title</label>
+              <label class="text-base font-medium">Title</label>
               <input
                 type="text"
                 name="title"
@@ -96,7 +96,7 @@ defmodule DevTodo.Web.IndexLive do
               />
             </div>
             <div class="flex flex-col gap-1">
-              <label class="text-sm font-medium">Status</label>
+              <label class="text-base font-medium">Status</label>
               <select name="status" class="select select-bordered w-full">
                 <option
                   :for={status <- @statuses}
@@ -108,7 +108,7 @@ defmodule DevTodo.Web.IndexLive do
               </select>
             </div>
             <div class="flex flex-col gap-1">
-              <label class="text-sm font-medium">Assignees</label>
+              <label class="text-base font-medium">Assignees</label>
               <input
                 type="text"
                 name="assignees"
@@ -116,10 +116,10 @@ defmodule DevTodo.Web.IndexLive do
                 placeholder="@user1 @user2"
                 class={["input input-bordered w-full", @assignees_error && "input-error"]}
               />
-              <p :if={@assignees_error} class="text-error text-xs">{@assignees_error}</p>
+              <p :if={@assignees_error} class="text-error text-sm">{@assignees_error}</p>
             </div>
             <div class="flex flex-col gap-1">
-              <label class="text-sm font-medium">Labels</label>
+              <label class="text-base font-medium">Labels</label>
               <input
                 type="text"
                 name="labels"
@@ -127,13 +127,13 @@ defmodule DevTodo.Web.IndexLive do
                 placeholder="bug, feature, docs"
                 class="input input-bordered w-full"
               />
-              <p class="text-base-content/40 text-xs">Comma-separated label names</p>
+              <p class="text-base-content/40 text-sm">Comma-separated label names</p>
             </div>
             <div class="flex flex-col gap-1">
-              <label class="text-sm font-medium">Description</label>
+              <label class="text-base font-medium">Description</label>
               <textarea
                 name="description"
-                class="textarea textarea-bordered min-h-[6rem] w-full text-sm"
+                class="textarea textarea-bordered min-h-[6rem] w-full text-base"
                 placeholder="Add notes..."
               >{@modal_task.description}</textarea>
             </div>

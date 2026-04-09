@@ -122,21 +122,21 @@ defmodule DevTodo.Web.Components do
 
   def column(assigns) do
     ~H"""
-    <div class="group/section min-h-0 w-64 shrink-0 overflow-y-auto rounded-lg sm:w-72">
+    <div class="group/section min-h-0 w-72 shrink-0 overflow-y-auto rounded-lg sm:w-96">
       <div class="bg-base-100/40 h-15 sticky top-0 z-10 flex items-center px-3 backdrop-blur-sm sm:px-6">
         <div class="mr-3 flex shrink-0 justify-center">
           <.task_status_icon status={@status} />
         </div>
-        <span class="text-base-content/40 font-mono mr-3 text-xs">
+        <span class="text-base-content/40 font-mono mr-3 text-sm">
           [{length(@tasks)}]
         </span>
-        <span class="text-base-content/80 font-mono pt-px text-xs font-semibold uppercase tracking-wide">
+        <span class="text-base-content/80 font-mono pt-px text-sm font-semibold uppercase tracking-wide">
           {status_name(@status)}
         </span>
         <div class="flex-1" />
         <button
           class="btn btn-ghost btn-xs opacity-0 transition-opacity group-hover/section:opacity-100"
-          phx-click={JS.push("open_add_modal", value: %{status: @status})}
+          phx-click={JS.push("open_modal", value: %{status: @status})}
         >
           <.icon name="hero-plus-micro" class="size-3.5" />
         </button>
@@ -181,7 +181,7 @@ defmodule DevTodo.Web.Components do
       class="bg-base-100 ring-base-300 group/card block select-none rounded-lg px-3 pb-3 ring-1 transition-colors hover:ring-primary/50"
     >
       <div class="mb-1">
-        <span class="text-base-content/40 font-mono text-[0.6rem]">{@prefix}-{@task.id}</span>
+        <span class="text-base-content/40 font-mono text-xs">{@prefix}-{@task.id}</span>
       </div>
       <div
         phx-click={JS.push("open_task", value: %{id: @task.id})}
@@ -189,12 +189,12 @@ defmodule DevTodo.Web.Components do
       >
         <.task_status_icon status={@task.status} />
         <div class="min-w-0 flex-1">
-          <span class="text-base-content/80 line-clamp-1 text-xs font-semibold leading-tight hover:text-primary">
+          <span class="text-base-content/80 line-clamp-1 text-sm font-semibold leading-tight hover:text-primary">
             {@task.title}
           </span>
         </div>
       </div>
-      <p :if={@task.description != ""} class="text-base-content/40 line-clamp-3 mt-1 pl-7 text-xs">
+      <p :if={@task.description != ""} class="text-base-content/40 line-clamp-3 mt-1 pl-7 text-sm">
         {@task.description}
       </p>
       <div :if={@task.labels != []} class="mt-2 flex flex-wrap gap-1 pl-7">
@@ -202,7 +202,7 @@ defmodule DevTodo.Web.Components do
       </div>
       <div
         :if={@task.assignees != [] or @task.pr}
-        class="text-base-content/50 mt-2 flex items-center gap-2 text-xs"
+        class="text-base-content/50 mt-2 flex items-center gap-2 text-sm"
       >
         <.github_link
           :for={assignee <- @task.assignees}
@@ -239,16 +239,16 @@ defmodule DevTodo.Web.Components do
                 <div class="mr-3 flex shrink-0 justify-center">
                   <.task_status_icon status={status} />
                 </div>
-                <span class="text-base-content/40 font-mono mr-3 text-xs">
+                <span class="text-base-content/40 font-mono mr-3 text-sm">
                   [{length(Map.get(@tasks, status, []))}]
                 </span>
-                <span class="text-base-content/80 font-mono pt-px text-xs font-semibold uppercase tracking-wide">
+                <span class="text-base-content/80 font-mono pt-px text-sm font-semibold uppercase tracking-wide">
                   {status_name(status)}
                 </span>
                 <div class="flex-1" />
                 <button
                   class="btn btn-ghost btn-xs opacity-0 transition-opacity group-hover/section:opacity-100"
-                  phx-click={JS.push("open_add_modal", value: %{status: status})}
+                  phx-click={JS.push("open_modal", value: %{status: status})}
                 >
                   <.icon name="hero-plus-micro" class="size-3.5" />
                 </button>
@@ -274,17 +274,17 @@ defmodule DevTodo.Web.Components do
                   </div>
                   <span
                     phx-click={JS.push("open_task", value: %{id: task.id})}
-                    class="font-mono text-base-content/40 hidden w-14 shrink-0 cursor-pointer truncate text-xs hover:text-primary sm:inline"
+                    class="font-mono text-base-content/40 hidden w-16 shrink-0 cursor-pointer truncate text-sm hover:text-primary sm:inline"
                   >
                     {@prefix}-{task.id}
                   </span>
                   <span
                     phx-click={JS.push("open_task", value: %{id: task.id})}
-                    class="text-base-content/80 min-w-0 flex-1 cursor-pointer truncate pr-3 text-xs font-semibold hover:text-primary sm:w-64 sm:flex-none"
+                    class="text-base-content/80 min-w-0 flex-1 cursor-pointer truncate pr-3 text-sm font-semibold hover:text-primary sm:w-96 sm:flex-none"
                   >
                     {task.title}
                   </span>
-                  <span class="text-base-content/40 hidden min-w-0 flex-1 truncate pr-3 text-xs md:inline">
+                  <span class="text-base-content/40 hidden min-w-0 flex-1 truncate pr-3 text-sm md:inline">
                     {if task.description != "", do: first_line(task.description)}
                   </span>
                   <div :if={task.labels != []} class="mr-3 hidden shrink-0 items-center gap-1 sm:flex">
@@ -294,7 +294,7 @@ defmodule DevTodo.Web.Components do
                       label_colors={@label_colors}
                     />
                   </div>
-                  <div class="text-base-content/50 mr-3 hidden w-48 shrink-0 items-center justify-end gap-3 text-xs sm:flex">
+                  <div class="text-base-content/50 mr-3 hidden w-48 shrink-0 items-center justify-end gap-3 text-sm sm:flex">
                     <.github_link
                       :if={task.pr}
                       href={@repo_url && "#{@repo_url}/pull/#{task.pr}"}
@@ -339,7 +339,7 @@ defmodule DevTodo.Web.Components do
                 </div>
                 <div
                   :if={Map.get(@tasks, status, []) == []}
-                  class="text-base-content/30 py-2 pl-11 text-xs"
+                  class="text-base-content/30 py-2 pl-11 text-sm"
                 >
                   ---
                 </div>
@@ -463,13 +463,13 @@ defmodule DevTodo.Web.Components do
       <div class="flex items-start gap-2">
         <.icon name="hero-exclamation-triangle-mini" class="size-5 text-warning mt-0.5 shrink-0" />
         <div class="min-w-0 flex-1">
-          <p class="text-warning text-sm font-medium">
+          <p class="text-warning text-base font-medium">
             {length(@warnings)} line(s) in TODO.md couldn't be parsed
           </p>
           <ul class="mt-1 space-y-0.5">
             <li
               :for={{status, line} <- @warnings}
-              class="text-base-content/60 font-mono truncate text-xs"
+              class="text-base-content/60 font-mono truncate text-sm"
             >
               <span class="text-base-content/40">{status_name(status)}:</span> {String.trim(line)}
             </li>
@@ -491,7 +491,7 @@ defmodule DevTodo.Web.Components do
       class={["fixed top-4 right-4 z-50 max-w-sm rounded-lg p-4 shadow-lg", @kind == :info && "bg-info/10 text-info border-info/30 border", @kind == :error && "bg-error/10 text-error border-error/30 border"]}
       {@rest}
     >
-      <p class="text-sm">{msg}</p>
+      <p class="text-base">{msg}</p>
     </div>
     """
   end
@@ -577,7 +577,7 @@ defmodule DevTodo.Web.Components do
 
   def task_context_menu(assigns) do
     ~H"""
-    <ul class="menu bg-base-100 ring-base-300 text-base-content/60 z-50 w-52 rounded-lg p-1 text-xs shadow-lg ring-1">
+    <ul class="menu bg-base-100 ring-base-300 text-base-content/60 z-50 w-52 rounded-lg p-1 text-sm shadow-lg ring-1">
       <li>
         <button
           phx-click={
@@ -625,7 +625,7 @@ defmodule DevTodo.Web.Components do
     ~H"""
     <span
       style={@style}
-      class="text-[0.6rem] inline-flex items-center rounded-full px-1.5 py-0.5 font-medium leading-none"
+      class="inline-flex items-center rounded-full px-1.5 py-0.5 text-xs font-medium leading-none"
     >
       {@label}
     </span>
@@ -639,14 +639,14 @@ defmodule DevTodo.Web.Components do
   def label_filter(assigns) do
     ~H"""
     <div class="flex flex-wrap items-center gap-1.5 px-4 pt-3 sm:px-6">
-      <span class="text-base-content/40 mr-1 text-xs">
+      <span class="text-base-content/40 mr-1 text-sm">
         <.icon name="hero-tag-micro" class="size-3" /> Labels
       </span>
       <button
         :for={label <- @all_labels}
         phx-click={JS.push("toggle_label", value: %{label: label})}
         style={label_style(@label_colors[label])}
-        class={["text-[0.65rem] inline-flex cursor-pointer items-center rounded-full px-2 py-0.5 font-medium leading-none transition-all", if(MapSet.member?(@filter_labels, label),
+        class={["inline-flex cursor-pointer items-center rounded-full px-2 py-0.5 text-xs font-medium leading-none transition-all", if(MapSet.member?(@filter_labels, label),
     do: "ring-current/50 ring-2",
     else: "opacity-60 hover:opacity-100")]}
       >
@@ -655,7 +655,7 @@ defmodule DevTodo.Web.Components do
       <button
         :if={MapSet.size(@filter_labels) > 0}
         phx-click="clear_label_filter"
-        class="text-base-content/40 ml-1 cursor-pointer text-xs hover:text-base-content/60"
+        class="text-base-content/40 ml-1 cursor-pointer text-sm hover:text-base-content/60"
       >
         clear
       </button>
