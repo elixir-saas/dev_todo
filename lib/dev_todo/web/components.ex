@@ -646,13 +646,9 @@ defmodule DevTodo.Web.Components do
         :for={label <- @all_labels}
         phx-click={JS.push("toggle_label", value: %{label: label})}
         style={label_style(@label_colors[label])}
-        class={[
-          "text-[0.65rem] inline-flex cursor-pointer items-center rounded-full px-2 py-0.5 font-medium leading-none transition-all",
-          if(MapSet.member?(@filter_labels, label),
-            do: "ring-2 ring-current/50",
-            else: "opacity-60 hover:opacity-100"
-          )
-        ]}
+        class={["text-[0.65rem] inline-flex cursor-pointer items-center rounded-full px-2 py-0.5 font-medium leading-none transition-all", if(MapSet.member?(@filter_labels, label),
+    do: "ring-current/50 ring-2",
+    else: "opacity-60 hover:opacity-100")]}
       >
         {label}
       </button>

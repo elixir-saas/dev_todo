@@ -135,6 +135,7 @@ defmodule DevTodo.Server do
     task = %Task{
       id: id,
       title: attrs.title,
+      description: Map.get(attrs, :description, ""),
       status: status,
       assignees: Map.get(attrs, :assignees, []),
       pr: Map.get(attrs, :pr),
