@@ -91,6 +91,7 @@ defmodule DevTodo.Web.Components do
   attr(:statuses, :list, required: true)
   attr(:prefix, :string, required: true)
   attr(:repo_url, :string, default: nil)
+  attr(:label_colors, :map, default: %{})
 
   def board(assigns) do
     ~H"""
@@ -104,6 +105,7 @@ defmodule DevTodo.Web.Components do
             tasks={Map.get(@tasks, status, [])}
             prefix={@prefix}
             repo_url={@repo_url}
+            label_colors={@label_colors}
           />
         </div>
       </div>
@@ -116,6 +118,7 @@ defmodule DevTodo.Web.Components do
   attr(:tasks, :list, required: true)
   attr(:prefix, :string, required: true)
   attr(:repo_url, :string, default: nil)
+  attr(:label_colors, :map, default: %{})
 
   def column(assigns) do
     ~H"""
@@ -152,7 +155,13 @@ defmodule DevTodo.Web.Components do
         class="min-h-[4rem] flex flex-col gap-3 px-3 pt-px pb-6"
       >
         <div :for={task <- @tasks} data-item-id={task.id}>
-          <.task_card task={task} statuses={@statuses} prefix={@prefix} repo_url={@repo_url} />
+          <.task_card
+            task={task}
+            statuses={@statuses}
+            prefix={@prefix}
+            repo_url={@repo_url}
+            label_colors={@label_colors}
+          />
         </div>
       </div>
     </div>
@@ -163,6 +172,7 @@ defmodule DevTodo.Web.Components do
   attr(:statuses, :list, required: true)
   attr(:prefix, :string, required: true)
   attr(:repo_url, :string, default: nil)
+  attr(:label_colors, :map, default: %{})
 
   def task_card(assigns) do
     ~H"""
@@ -187,6 +197,9 @@ defmodule DevTodo.Web.Components do
       <p :if={@task.description != ""} class="text-base-content/40 line-clamp-3 mt-1 pl-7 text-xs">
         {@task.description}
       </p>
+      <div :if={@task.labels != []} class="mt-2 flex flex-wrap gap-1 pl-7">
+        <.label_badge :for={label <- @task.labels} label={label} label_colors={@label_colors} />
+      </div>
       <div
         :if={@task.assignees != [] or @task.pr}
         class="text-base-content/50 mt-2 flex items-center gap-2 text-xs"
@@ -213,6 +226,7 @@ defmodule DevTodo.Web.Components do
   attr(:statuses, :list, required: true)
   attr(:prefix, :string, required: true)
   attr(:repo_url, :string, default: nil)
+  attr(:label_colors, :map, default: %{})
 
   def list_view(assigns) do
     ~H"""
@@ -273,6 +287,13 @@ defmodule DevTodo.Web.Components do
                   <span class="text-base-content/40 hidden min-w-0 flex-1 truncate pr-3 text-xs md:inline">
                     {if task.description != "", do: first_line(task.description)}
                   </span>
+                  <div :if={task.labels != []} class="mr-3 hidden shrink-0 items-center gap-1 sm:flex">
+                    <.label_badge
+                      :for={label <- task.labels}
+                      label={label}
+                      label_colors={@label_colors}
+                    />
+                  </div>
                   <div class="text-base-content/50 mr-3 hidden w-48 shrink-0 items-center justify-end gap-3 text-xs sm:flex">
                     <.github_link
                       :if={task.pr}
@@ -593,6 +614,65 @@ defmodule DevTodo.Web.Components do
       </li>
     </ul>
     """
+  end
+
+  attr(:label, :string, required: true)
+  attr(:label_colors, :map, default: %{})
+
+  def label_badge(assigns) do
+    assigns = assign(assigns, :style, label_style(assigns.label_colors[assigns.label]))
+
+    ~H"""
+    <span
+      style={@style}
+      class="text-[0.6rem] inline-flex items-center rounded-full px-1.5 py-0.5 font-medium leading-none"
+    >
+      {@label}
+    </span>
+    """
+  end
+
+  attr(:all_labels, :list, required: true)
+  attr(:filter_labels, :any, required: true)
+  attr(:label_colors, :map, default: %{})
+
+  def label_filter(assigns) do
+    ~H"""
+    <div class="flex flex-wrap items-center gap-1.5 px-4 pt-3 sm:px-6">
+      <span class="text-base-content/40 mr-1 text-xs">
+        <.icon name="hero-tag-micro" class="size-3" /> Labels
+      </span>
+      <button
+        :for={label <- @all_labels}
+        phx-click={JS.push("toggle_label", value: %{label: label})}
+        style={label_style(@label_colors[label])}
+        class={[
+          "text-[0.65rem] inline-flex cursor-pointer items-center rounded-full px-2 py-0.5 font-medium leading-none transition-all",
+          if(MapSet.member?(@filter_labels, label),
+            do: "ring-2 ring-current/50",
+            else: "opacity-60 hover:opacity-100"
+          )
+        ]}
+      >
+        {label}
+      </button>
+      <button
+        :if={MapSet.size(@filter_labels) > 0}
+        phx-click="clear_label_filter"
+        class="text-base-content/40 ml-1 cursor-pointer text-xs hover:text-base-content/60"
+      >
+        clear
+      </button>
+    </div>
+    """
+  end
+
+  @default_label_style "background-color: oklch(from currentColor l c h / 0.15); color: oklch(0.55 0.1 0)"
+
+  defp label_style(nil), do: @default_label_style
+
+  defp label_style(hex) do
+    "background-color: #{hex}26; color: #{hex}"
   end
 
   def status_name(status), do: Parser.status_to_heading(status)

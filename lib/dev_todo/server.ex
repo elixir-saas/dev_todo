@@ -59,6 +59,10 @@ defmodule DevTodo.Server do
     GenServer.call(__MODULE__, :repo_url)
   end
 
+  def label_colors do
+    GenServer.call(__MODULE__, :label_colors)
+  end
+
   def subscribe do
     Phoenix.PubSub.subscribe(DevTodo.config!(:pubsub), topic())
   end
@@ -69,7 +73,9 @@ defmodule DevTodo.Server do
 
   @impl true
   def init(_opts) do
-    {:ok, {statuses, tasks, header, prefix, raw_lines, warnings}} = File.read_tasks()
+    {:ok, {statuses, tasks, header, prefix, label_colors, raw_lines, warnings}} =
+      File.read_tasks()
+
     tasks = maybe_fix_duplicate_ids(tasks, statuses)
 
     {:ok,
@@ -78,6 +84,7 @@ defmodule DevTodo.Server do
        tasks: tasks,
        header: header,
        prefix: prefix,
+       label_colors: label_colors,
        raw_lines: raw_lines,
        warnings: warnings,
        next_id: compute_next_id(tasks),
@@ -111,6 +118,10 @@ defmodule DevTodo.Server do
     {:reply, state.repo_url, state}
   end
 
+  def handle_call(:label_colors, _from, state) do
+    {:reply, state.label_colors, state}
+  end
+
   def handle_call({:get_task, id}, _from, state) do
     task = find_task(state.tasks, to_id(id))
     {:reply, task, state}
@@ -128,6 +139,7 @@ defmodule DevTodo.Server do
       assignees: Map.get(attrs, :assignees, []),
       pr: Map.get(attrs, :pr),
       attachments: Map.get(attrs, :attachments, []),
+      labels: Map.get(attrs, :labels, []),
       position: length(current)
     }
 
@@ -147,6 +159,7 @@ defmodule DevTodo.Server do
         |> maybe_update(:assignees, attrs)
         |> maybe_update(:pr, attrs)
         |> maybe_update(:attachments, attrs)
+        |> maybe_update(:labels, attrs)
       end)
 
     state = write_and_broadcast(state, new_tasks)
@@ -211,7 +224,7 @@ defmodule DevTodo.Server do
     {elapsed, result} = :timer.tc(fn -> File.read_tasks() end)
 
     case result do
-      {:ok, {statuses, tasks, header, prefix, raw_lines, warnings}} ->
+      {:ok, {statuses, tasks, header, prefix, label_colors, raw_lines, warnings}} ->
         task_count = tasks |> Map.values() |> List.flatten() |> length()
         warning_count = length(warnings)
 
@@ -219,7 +232,7 @@ defmodule DevTodo.Server do
           "[DevTodo] Reloaded #{Path.basename(File.todo_path())} (#{task_count} tasks, #{warning_count} warnings, #{div(elapsed, 1000)}ms)"
         )
 
-        broadcast(prefix, statuses, tasks, warnings)
+        broadcast(prefix, statuses, tasks, label_colors, warnings)
 
         {:noreply,
          %{
@@ -228,6 +241,7 @@ defmodule DevTodo.Server do
              tasks: tasks,
              header: header,
              prefix: prefix,
+             label_colors: label_colors,
              raw_lines: raw_lines,
              warnings: warnings,
              next_id: compute_next_id(tasks),
@@ -260,15 +274,15 @@ defmodule DevTodo.Server do
     if state.debounce_ref, do: Process.cancel_timer(state.debounce_ref)
     ref = Process.send_after(self(), :clear_debounce, @debounce_ms)
 
-    broadcast(state.prefix, state.statuses, tasks, state.warnings)
+    broadcast(state.prefix, state.statuses, tasks, state.label_colors, state.warnings)
     %{state | tasks: tasks, mtime: file_mtime(), just_wrote: true, debounce_ref: ref}
   end
 
-  defp broadcast(prefix, statuses, tasks, warnings) do
+  defp broadcast(prefix, statuses, tasks, label_colors, warnings) do
     Phoenix.PubSub.broadcast(
       DevTodo.config!(:pubsub),
       topic(),
-      {:tasks_updated, prefix, statuses, tasks, warnings}
+      {:tasks_updated, prefix, statuses, tasks, label_colors, warnings}
     )
   end
 
@@ -366,13 +380,14 @@ defmodule DevTodo.Server do
 
     if current_mtime != state.mtime do
       case File.read_tasks() do
-        {:ok, {statuses, tasks, header, prefix, raw_lines, warnings}} ->
+        {:ok, {statuses, tasks, header, prefix, label_colors, raw_lines, warnings}} ->
           %{
             state
             | statuses: statuses,
               tasks: tasks,
               header: header,
               prefix: prefix,
+              label_colors: label_colors,
               raw_lines: raw_lines,
               warnings: warnings,
               next_id: compute_next_id(tasks),

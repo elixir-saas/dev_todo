@@ -205,7 +205,7 @@ defmodule DevTodo.ParserTest do
       doc = """
       ## Todo
 
-      - [1] Build feature @alice @bob #pr:99 ^designs/mock.png ^specs/req.md
+      - [1] Build feature @alice @bob #pr:99 #label:bug #label:urgent ^designs/mock.png ^specs/req.md
       """
 
       {_statuses, tasks, _, _} = Parser.parse(doc)
@@ -214,6 +214,7 @@ defmodule DevTodo.ParserTest do
       assert task.title == "Build feature"
       assert task.assignees == ["alice", "bob"]
       assert task.pr == 99
+      assert task.labels == ["bug", "urgent"]
       assert task.attachments == ["designs/mock.png", "specs/req.md"]
     end
 
@@ -221,12 +222,48 @@ defmodule DevTodo.ParserTest do
       doc = """
       ## Todo
 
-      - [1] My task @user #pr:5 ^file.txt
+      - [1] My task @user #pr:5 #label:feature ^file.txt
       """
 
       {_statuses, tasks, _, _} = Parser.parse(doc)
       task = hd(tasks[:todo])
       assert task.title == "My task"
+    end
+
+    test "parses labels" do
+      doc = """
+      ## Todo
+
+      - [1] Fix login bug #label:bug #label:urgent
+      """
+
+      {_statuses, tasks, _, _} = Parser.parse(doc)
+      task = hd(tasks[:todo])
+      assert task.labels == ["bug", "urgent"]
+    end
+
+    test "parses task with no labels" do
+      doc = """
+      ## Todo
+
+      - [1] Simple task
+      """
+
+      {_statuses, tasks, _, _} = Parser.parse(doc)
+      task = hd(tasks[:todo])
+      assert task.labels == []
+    end
+
+    test "parses labels with hyphens and numbers" do
+      doc = """
+      ## Todo
+
+      - [1] Task #label:high-priority #label:v2
+      """
+
+      {_statuses, tasks, _, _} = Parser.parse(doc)
+      task = hd(tasks[:todo])
+      assert task.labels == ["high-priority", "v2"]
     end
   end
 
@@ -388,6 +425,7 @@ defmodule DevTodo.ParserTest do
             status: :todo,
             assignees: ["alice", "bob"],
             pr: 42,
+            labels: ["bug", "urgent"],
             attachments: ["mock.png"],
             position: 0
           }
@@ -395,7 +433,7 @@ defmodule DevTodo.ParserTest do
       }
 
       result = Parser.serialize([:todo], tasks, "# Header")
-      assert result =~ "- [1] Build feature @alice @bob #pr:42 ^mock.png"
+      assert result =~ "- [1] Build feature @alice @bob #pr:42 #label:bug #label:urgent ^mock.png"
     end
 
     test "serializes task with no metadata" do
@@ -407,6 +445,7 @@ defmodule DevTodo.ParserTest do
             status: :todo,
             assignees: [],
             pr: nil,
+            labels: [],
             attachments: [],
             position: 0
           }
@@ -415,6 +454,26 @@ defmodule DevTodo.ParserTest do
 
       result = Parser.serialize([:todo], tasks, "# Header")
       assert result =~ "- [1] Simple task\n"
+    end
+
+    test "serializes labels" do
+      tasks = %{
+        todo: [
+          %Task{
+            id: 1,
+            title: "Labeled task",
+            status: :todo,
+            assignees: [],
+            pr: nil,
+            labels: ["feature", "v2"],
+            attachments: [],
+            position: 0
+          }
+        ]
+      }
+
+      result = Parser.serialize([:todo], tasks, "# Header")
+      assert result =~ "- [1] Labeled task #label:feature #label:v2"
     end
 
     test "serializes empty sections" do
@@ -518,6 +577,20 @@ defmodule DevTodo.ParserTest do
       {_, tasks2, _, _} = Parser.parse(serialized)
 
       assert hd(tasks2[:todo]).description == "Description line one\nDescription line two"
+    end
+
+    test "round-trips labels" do
+      doc = """
+      ## Todo
+
+      - [1] My task #label:bug #label:feature
+      """
+
+      {statuses, tasks, _, _} = Parser.parse(doc)
+      serialized = Parser.serialize(statuses, tasks, "")
+      {_, tasks2, _, _} = Parser.parse(serialized)
+
+      assert hd(tasks2[:todo]).labels == ["bug", "feature"]
     end
   end
 

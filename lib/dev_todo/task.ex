@@ -1,7 +1,17 @@
 defmodule DevTodo.Task do
   @moduledoc false
 
-  defstruct [:id, :title, :status, :assignees, :pr, :attachments, :position, description: ""]
+  defstruct [
+    :id,
+    :title,
+    :status,
+    :assignees,
+    :pr,
+    :attachments,
+    :position,
+    description: "",
+    labels: []
+  ]
 
   @type t :: %__MODULE__{
           id: pos_integer(),
@@ -11,6 +21,7 @@ defmodule DevTodo.Task do
           pr: integer() | nil,
           attachments: [String.t()],
           position: non_neg_integer(),
-          description: String.t()
+          description: String.t(),
+          labels: [String.t()]
         }
 end

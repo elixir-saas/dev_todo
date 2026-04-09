@@ -40,21 +40,30 @@ defmodule DevTodo.Web.IndexLive do
           </div>
         </div>
 
+        <.label_filter
+          :if={@all_labels != []}
+          all_labels={@all_labels}
+          filter_labels={@filter_labels}
+          label_colors={@label_colors}
+        />
+
         <.parse_warnings :if={@warnings != []} warnings={@warnings} />
 
         <%= if @live_action == :board do %>
           <.board
-            tasks={@tasks}
+            tasks={@filtered_tasks}
             statuses={@statuses}
             prefix={@prefix}
             repo_url={@repo_url}
+            label_colors={@label_colors}
           />
         <% else %>
           <.list_view
-            tasks={@tasks}
+            tasks={@filtered_tasks}
             statuses={@statuses}
             prefix={@prefix}
             repo_url={@repo_url}
+            label_colors={@label_colors}
           />
         <% end %>
       </div>
@@ -93,6 +102,16 @@ defmodule DevTodo.Web.IndexLive do
               class={["input input-bordered w-full", @assignees_error && "input-error"]}
             />
             <p :if={@assignees_error} class="text-error text-xs">{@assignees_error}</p>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-sm font-medium">Labels</label>
+            <input
+              type="text"
+              name="labels"
+              placeholder="bug, feature, docs"
+              class="input input-bordered w-full"
+            />
+            <p class="text-base-content/40 text-xs">Comma-separated label names</p>
           </div>
           <div class="flex justify-end gap-2 pt-2">
             <button
@@ -154,6 +173,17 @@ defmodule DevTodo.Web.IndexLive do
               <p :if={@task_assignees_error} class="text-error text-xs">{@task_assignees_error}</p>
             </div>
             <div class="flex flex-col gap-1">
+              <label class="text-sm font-medium">Labels</label>
+              <input
+                type="text"
+                name="labels"
+                value={Enum.join(@selected_task.labels, ", ")}
+                placeholder="bug, feature, docs"
+                class="input input-bordered w-full"
+              />
+              <p class="text-base-content/40 text-xs">Comma-separated label names</p>
+            </div>
+            <div class="flex flex-col gap-1">
               <label class="text-sm font-medium">Description</label>
               <textarea
                 name="description"
@@ -192,6 +222,8 @@ defmodule DevTodo.Web.IndexLive do
   def mount(_params, _session, socket) do
     if connected?(socket), do: DevTodo.subscribe()
 
+    tasks = DevTodo.list_tasks()
+
     socket =
       socket
       |> assign(:page_title, "Tasks")
@@ -199,7 +231,9 @@ defmodule DevTodo.Web.IndexLive do
       |> assign(:list_path, dev_todo_path(socket, "/list"))
       |> assign(:statuses, DevTodo.list_statuses())
       |> assign(:prefix, DevTodo.prefix())
-      |> assign(:tasks, DevTodo.list_tasks())
+      |> assign(:tasks, tasks)
+      |> assign(:label_colors, DevTodo.label_colors())
+      |> assign(:filter_labels, MapSet.new())
       |> assign(:repo_url, DevTodo.repo_url())
       |> assign(:warnings, DevTodo.warnings())
       |> assign(:show_add_modal, false)
@@ -207,6 +241,7 @@ defmodule DevTodo.Web.IndexLive do
       |> assign(:assignees_error, nil)
       |> assign(:selected_task, nil)
       |> assign(:task_assignees_error, nil)
+      |> assign_derived(tasks)
 
     {:ok, socket, layout: false}
   end
@@ -244,6 +279,7 @@ defmodule DevTodo.Web.IndexLive do
       "title" => title,
       "status" => status,
       "assignees" => assignees_str,
+      "labels" => labels_str,
       "description" => description
     } = params
 
@@ -252,6 +288,7 @@ defmodule DevTodo.Web.IndexLive do
     case validate_assignees(assignees_str) do
       nil ->
         assignees = parse_assignees(assignees_str)
+        labels = parse_labels(labels_str)
         target_status = String.to_atom(status)
 
         if target_status != task.status do
@@ -261,7 +298,8 @@ defmodule DevTodo.Web.IndexLive do
         DevTodo.update_task(task.id, %{
           title: String.trim(title),
           description: String.trim(description),
-          assignees: assignees
+          assignees: assignees,
+          labels: labels
         })
 
         {:noreply, assign(socket, :selected_task, nil)}
@@ -288,17 +326,24 @@ defmodule DevTodo.Web.IndexLive do
 
   def handle_event(
         "create_task",
-        %{"title" => title, "status" => status, "assignees" => assignees_str},
+        %{
+          "title" => title,
+          "status" => status,
+          "assignees" => assignees_str,
+          "labels" => labels_str
+        },
         socket
       ) do
     case validate_assignees(assignees_str) do
       nil ->
         assignees = parse_assignees(assignees_str)
+        labels = parse_labels(labels_str)
 
         case DevTodo.create_task(%{
                title: String.trim(title),
                status: String.to_atom(status),
-               assignees: assignees
+               assignees: assignees,
+               labels: labels
              }) do
           {:ok, _task} ->
             {:noreply, socket |> assign(:show_add_modal, false) |> assign(:assignees_error, nil)}
@@ -315,6 +360,31 @@ defmodule DevTodo.Web.IndexLive do
   def handle_event("delete_task", %{"id" => id}, socket) do
     DevTodo.delete_task(id)
     {:noreply, assign(socket, :selected_task, nil)}
+  end
+
+  def handle_event("toggle_label", %{"label" => label}, socket) do
+    filter_labels = socket.assigns.filter_labels
+
+    filter_labels =
+      if MapSet.member?(filter_labels, label),
+        do: MapSet.delete(filter_labels, label),
+        else: MapSet.put(filter_labels, label)
+
+    socket =
+      socket
+      |> assign(:filter_labels, filter_labels)
+      |> assign_derived(socket.assigns.tasks)
+
+    {:noreply, socket}
+  end
+
+  def handle_event("clear_label_filter", _params, socket) do
+    socket =
+      socket
+      |> assign(:filter_labels, MapSet.new())
+      |> assign_derived(socket.assigns.tasks)
+
+    {:noreply, socket}
   end
 
   defp validate_assignees(""), do: nil
@@ -335,7 +405,42 @@ defmodule DevTodo.Web.IndexLive do
     |> Enum.reject(&(&1 == ""))
   end
 
-  def handle_info({:tasks_updated, prefix, statuses, tasks, warnings}, socket) do
+  defp parse_labels(str) do
+    str
+    |> String.split(",", trim: true)
+    |> Enum.map(&String.trim/1)
+    |> Enum.reject(&(&1 == ""))
+  end
+
+  defp assign_derived(socket, tasks) do
+    all_labels =
+      tasks
+      |> Map.values()
+      |> List.flatten()
+      |> Enum.flat_map(& &1.labels)
+      |> Enum.uniq()
+      |> Enum.sort()
+
+    filter_labels = socket.assigns.filter_labels
+
+    filtered_tasks =
+      if MapSet.size(filter_labels) == 0 do
+        tasks
+      else
+        Map.new(tasks, fn {status, task_list} ->
+          {status,
+           Enum.filter(task_list, fn t ->
+             Enum.any?(t.labels, &MapSet.member?(filter_labels, &1))
+           end)}
+        end)
+      end
+
+    socket
+    |> assign(:all_labels, all_labels)
+    |> assign(:filtered_tasks, filtered_tasks)
+  end
+
+  def handle_info({:tasks_updated, prefix, statuses, tasks, label_colors, warnings}, socket) do
     # If the task modal is open, refresh the selected task from new data
     selected_task =
       case socket.assigns.selected_task do
@@ -351,7 +456,9 @@ defmodule DevTodo.Web.IndexLive do
      |> assign(:prefix, prefix)
      |> assign(:statuses, statuses)
      |> assign(:tasks, tasks)
+     |> assign(:label_colors, label_colors)
      |> assign(:warnings, warnings)
-     |> assign(:selected_task, selected_task)}
+     |> assign(:selected_task, selected_task)
+     |> assign_derived(tasks)}
   end
 end

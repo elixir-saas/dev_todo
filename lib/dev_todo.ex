@@ -80,6 +80,9 @@ defmodule DevTodo do
   @doc "Returns a list of `{status, line}` tuples for lines that couldn't be parsed."
   defdelegate warnings, to: Server
 
+  @doc "Returns the label color map `%{\"bug\" => \"red\", ...}` from the TODO.md header."
+  defdelegate label_colors, to: Server
+
   @doc "Subscribes the calling process to task update broadcasts via PubSub."
   defdelegate subscribe, to: Server
 

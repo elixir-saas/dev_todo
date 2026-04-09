@@ -38,17 +38,24 @@ defmodule DevTodo.Parser do
     |> utf8_string([not: ?\s, not: ?\n], min: 1)
     |> unwrap_and_tag(:attachment)
 
+  # Label: "#label:name"
+  label =
+    ignore(string("#label:"))
+    |> utf8_string([?a..?z, ?A..?Z, ?0..?9, ?_, ?-], min: 1)
+    |> unwrap_and_tag(:label)
+
   # A plain word (part of the title) — anything that isn't a metadata token
   title_word =
-    lookahead_not(choice([string("@"), string("#pr:"), string("^")]))
+    lookahead_not(choice([string("@"), string("#pr:"), string("#label:"), string("^")]))
     |> utf8_string([not: ?\s, not: ?\n], min: 1)
     |> unwrap_and_tag(:title_word)
 
-  # A token in the task body is one of: assignee, pr, attachment, or title word
+  # A token in the task body is one of: assignee, pr, label, attachment, or title word
   token =
     choice([
       assignee,
       pr_ref,
+      label,
       attachment,
       title_word
     ])
@@ -240,6 +247,9 @@ defmodule DevTodo.Parser do
     attachments =
       for {:attachment, path} <- rest, do: path
 
+    labels =
+      for {:label, name} <- rest, do: name
+
     title =
       rest
       |> Enum.filter(&match?({:title_word, _}, &1))
@@ -252,6 +262,7 @@ defmodule DevTodo.Parser do
       assignees: assignees,
       pr: pr,
       attachments: attachments,
+      labels: labels,
       position: 0
     }
   end
@@ -269,6 +280,12 @@ defmodule DevTodo.Parser do
       case task.pr do
         nil -> parts
         pr -> parts ++ ["#pr:#{pr}"]
+      end
+
+    parts =
+      case task.labels do
+        [] -> parts
+        labels -> parts ++ Enum.map(labels, &"#label:#{&1}")
       end
 
     parts =

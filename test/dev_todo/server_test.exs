@@ -103,7 +103,7 @@ defmodule DevTodo.ServerTest do
     test "broadcasts update" do
       Server.subscribe()
       {:ok, _task} = Server.create_task(%{title: "Broadcast test", status: :todo})
-      assert_receive {:tasks_updated, _prefix, _statuses, _tasks, _warnings}, 1000
+      assert_receive {:tasks_updated, _prefix, _statuses, _tasks, _label_colors, _warnings}, 1000
     end
   end
 
