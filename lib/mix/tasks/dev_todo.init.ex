@@ -20,16 +20,18 @@ defmodule Mix.Tasks.DevTodo.Init do
   TODO.md — Project Task Board
 
   - Prefix: DEV
+  - Labels: bug=#ef4444, feature=#3b82f6, docs=#22c55e
 
   Rules for AI agents editing this file:
   - Sections are defined by ## headings (e.g., ## In Progress, ## Todo)
   - To add a new status, add a new ## heading — the board adapts automatically
-  - Task format: `- [N] Task title @assignee #pr:123` where N is a number
+  - Task format: `- [N] Task title @assignee #pr:123 #label:bug` where N is a number
   - IDs are auto-incrementing integers (the board displays them as PREFIX-N, e.g., DEV-1)
   - Do not reuse IDs — always use the next available number
   - To move a task, cut the line and paste under the target section header
   - Order within a section = priority (top = highest)
   - Descriptions: indent lines under a task with 2+ spaces
+  - Labels: tag with `#label:name` (multiple allowed, colors defined above)
   - Attachments: reference with `^path/to/file`
   - Do not reorder or remove existing section headers
   -->
