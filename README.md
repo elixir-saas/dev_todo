@@ -30,7 +30,7 @@ No database. No migrations. Just a markdown file.
 # mix.exs
 def deps do
   [
-    {:dev_todo, "~> 0.2.0", only: :dev}
+    {:dev_todo, "~> 0.2.1", only: :dev}
   ]
 end
 ```
